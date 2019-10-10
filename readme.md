@@ -1,0 +1,1 @@
+## This script (or maybe scripts eventually?) will be used to transfer assets and metadata from our local ResourceSpace to Internet Archive.
