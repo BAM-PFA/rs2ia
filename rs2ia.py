@@ -35,7 +35,7 @@ class User:
 			os.path.isfile('/home/.config/ia.ini')
 		except FileNotFoundError:
 			command = ["ia","configure"]
-			ia configure
+			# ia configure
 		else:
 			pass
 
@@ -61,15 +61,22 @@ class ResourceSpaceAPI:
 		For more detail: https://www.resourcespace.com/knowledge-base/api/
 		'''
 		query = "user={}&function={}&{}".format(_user.rsUserName, function_to_query, parameters)
-		sign = hashlib.sha256(User.rsAPIkey+query).hexdigest()
-		queryURL = "http://{}/api/index.php?{}&sign={}".format(self.edithServer, query, sign)
-		try:
-			# get the result of API query, i.e. what is returned by the query URL
-			result = queryURL
-		except (IOError, UnicodeDecodeError) as err:
-			print(err)
+		sign = hashlib.sha256(_user.rsAPIkey.encode()+query.encode())
+		sign = sign.hexdigest()
+		queryURL = "http://{}/api/?{}&sign={}".format(self.edithServer, query, sign)
+		# get the result of API query, i.e. what is returned by the query URL
+		print(queryURL)
+		result = requests.post(queryURL)
+		# try:
+		# 	# get the result of API query, i.e. what is returned by the query URL
+		# 	result = queryURL
+		# except (IOError, UnicodeDecodeError) as err:
+		# 	print(err)
+		httpStatus = result.status_code
+		if httpStatus == 200:
+			return httpStatus,result.text
 		else:
-		    return result
+			return httpStatus,None
 
 class Asset:
 	'''
@@ -88,16 +95,27 @@ class Asset:
 		self.rsAssetID = self.assetMetadata['Resource ID(s)'] # this value will come from a metadata CSV file
 		self.collection='TVTV', # archive.org collection will always be 'TVTV'
 		self.mediatype='movies', # archive.org media type will always be 'movies'
+		self._user=_user
+		self.rsAPI = ResourceSpaceAPI(_user)
 
 	def get_local_asset_path(self):
 		# see https://www.resourcespace.com/knowledge-base/api/get_resource_path
-		self.primaryAssetPath = ResourceSpaceAPI.query("get_resource_path",self.rsAssetID,self._user)
-		self.localAssetPaths = primaryAssetPath
+		# construct parameters of API call as a string
+		parameters = "param1={}&param2=1&param3=&param4=&param5=&param6=&param7=&param8=".format(self.rsAssetID)
+		# query API
+		self.primaryAssetPath = self.rsAPI.query("get_resource_path",parameters,self._user)
+		print(self.primaryAssetPath)
+		self.localAssetPaths.append(self.primaryAssetPath)
 
 	def get_local_alternative_asset_paths(self):
 		# get filepaths for alternative files associated with the primary asset. see https://www.resourcespace.com/knowledge-base/api/get_alternative_files
-		self.alternativeAssetPaths = ResourceSpaceAPI.query("get_alternative_files",self.rsAssetID,self._user)
-		self.localAssetPaths += alternativeAssetPaths
+		# construct parameters of API call as a string
+		parameters = "param1={}".format(self.rsAssetID)
+		# query API
+		self.alternativeAssetPaths = self.rsAPI.query("get_alternative_files",parameters,self._user)
+		print(self.alternativeAssetPaths)
+		# ast.literal_eval(self.alternativeAssetPaths)
+		self.localAssetPaths.append(self.alternativeAssetPaths)
 
 	def post_to_ia(self):
 		'''
@@ -140,7 +158,7 @@ class Asset:
 		else:
 			print("Upload failed")
 
-def parse_resourcespace_csv(csvPath):
+def parse_resourcespace_csv(csvPath,_user):
 	'''
 	1. Interpret metadata CSV as a 'key:value' dictionary, using the first row
 		as the 'key', using DictReader
@@ -158,8 +176,9 @@ def parse_resourcespace_csv(csvPath):
 			# get_local_asset_path uses the rsAssetID to find the local filepath of the asset
 			currentAsset.get_local_asset_path()
 			currentAsset.get_local_alternative_asset_paths()
-			print(rsAssetID,currentAsset.localAssetPath)
+			print(currentAsset.rsAssetID,currentAsset.localAssetPaths)
 			currentAsset.post_to_ia()
+			del currentAsset
 
 def define_resourcespace_csv():
 	csvPath = input("drag and drop path to CSV with ResourceSpace metadata:")
@@ -167,7 +186,7 @@ def define_resourcespace_csv():
 
 def main():
 	_user = User()
-	rsAPI = ResourceSpaceAPI(_user)
+	# rsAPI = ResourceSpaceAPI(_user)
 	print("Hello, "+_user.rsUserName)
 	csvPath = define_resourcespace_csv()
 	parse_resourcespace_csv(csvPath,_user)
