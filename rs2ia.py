@@ -120,7 +120,7 @@ class Asset:
 		self._user = _user
 		self.rsAPI = ResourceSpaceAPI(_user)
 
-	def get_local_asset_path(self):
+	def get_local_asset_path(self,mediaType=None):
 		# see https://www.resourcespace.com/knowledge-base/api/get_resource_path
 		# construct parameters of API call as a string
 		parameters = (
@@ -130,7 +130,7 @@ class Asset:
 			"&param4="
 			"&param5={}".format(
 				self.rsAssetID,
-				"mp4"
+				mediaType
 				)
 			)
 		# query API for filepath of primary asset as hosted on ResourceSpace - COMMENTED OUT FOR TESTING
@@ -248,7 +248,7 @@ class Asset:
 		else:
 			print("Upload failed")
 
-def parse_resourcespace_csv(csvPath,_user):
+def parse_resourcespace_csv(csvPath,_user, mediaType):
 	'''
 	1. Interpret metadata CSV as a 'key:value' dictionary, using the first row
 		as the 'key', using DictReader
@@ -264,7 +264,7 @@ def parse_resourcespace_csv(csvPath,_user):
 				_user=_user
 				)
 			# get_local_asset_path uses the rsAssetID to find the local filepath of the asset
-			currentAsset.get_local_asset_path()
+			currentAsset.get_local_asset_path(mediaType)
 			try:
 				currentAsset.get_local_alternative_asset_paths()
 			except:
@@ -316,7 +316,15 @@ def main():
 	_user = User()
 	print("Hello, "+_user.rsUserName)
 	csvPath = define_resourcespace_csv()
-	parse_resourcespace_csv(csvPath,_user)
+	mediaType = input("You want audio or video? Type 'a' for audio or 'v' for video: ")
+	if mediaType == 'a':
+		mediaType = 'mp3'
+	elif mediaType == 'v':
+		mediaType = 'mp4'
+	else:
+		print("YOU ENTERED AN INVALID MEDIA TYPE! JUST TYPE a OR v DUMMIE")
+		sys.exit()
+	parse_resourcespace_csv(csvPath,_user,mediaType)
 
 if __name__ == "__main__":
 	main()
