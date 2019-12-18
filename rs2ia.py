@@ -3,18 +3,21 @@
 This script (or maybe scripts eventually?) will be used to transfer
 assets and metadata from our local ResourceSpace to Internet Archive.
 """
-import os.path
-import requests
-import getpass
-import subprocess
-import hashlib
-import csv
 import ast
-import re
+import csv
+import getpass
+from google_drive_downloader import GoogleDriveDownloader # from https://github.com/ndrplz/google-drive-downloader/blob/master/google_drive_downloader/google_drive_downloader.py
+import hashlib
 from internetarchive import upload
+import os.path
+import re
+import requests
+import subprocess
+import sys
+import time
 
-# COUNTER IS FOR TESTING PURPOSES
-counter=1
+# # COUNTER IS FOR TESTING PURPOSES
+# counter=1
 
 class User:
 	'''
@@ -131,16 +134,16 @@ class Asset:
 				)
 			)
 		# query API for filepath of primary asset as hosted on ResourceSpace - COMMENTED OUT FOR TESTING
-		# self.primaryAssetPath = self.rsAPI.query(
-		# 	"get_resource_path",
-		# 	parameters,
-		# 	self._user
-		# 	)
+		self.primaryAssetPath = self.rsAPI.query(
+			"get_resource_path",
+			parameters,
+			self._user
+			)
 
 		### THIS IS FAKE STUFF FOR TESTING. THERE ARE 3 FAKE FILES: 1bampfaTVTV.mp4, 2bampfaTVTV.mp4, 3bampfaTVTV.mp4
-		global counter
-		self.primaryAssetPath = os.path.join("/Users/bampfa/Documents/GitHub/rs2ia/fakes/",str(counter)+"bampfaTVTV.mp4")
-		counter += 1
+		# global counter
+		# self.primaryAssetPath = os.path.join("/Users/bampfa/Documents/GitHub/rs2ia/fakes/",str(counter)+"bampfaTVTV.mp4")
+		# counter += 1
 		# END FAKE STUFF FOR TESTING
 
 		print("PRIMARY ASSET PATH:")
@@ -183,7 +186,7 @@ class Asset:
 			self._user
 			)
 		#### COMMENTED OUT FOR TESTING
-		# self.localAssetPaths.append(self.alternativeAssetPaths)
+		self.localAssetPaths.append(self.alternativeAssetPaths)
 		print("ALL ASSET PATHS:")
 		print(self.localAssetPaths)
 
@@ -220,8 +223,8 @@ class Asset:
 			# 'frame rate' column should be normalized into numbers manually by operator
 			'frames_per_second': self.assetMetadata['Frame rate'],
 			# 'video size' column should be split into 'Video height' and 'Video width' numbers manually by operator
-			'source_pixel_width': self.assetMetadata['Video height'],
-			'source_pixel_height': self.assetMetadata['Video width'],
+			# 'source_pixel_width': self.assetMetadata['Video height'],
+			# 'source_pixel_height': self.assetMetadata['Video width'],
 			# 'PFA full accession number' column should be normalized to 'urn:bampfa_accession_number:XXXX' manually by operator
 			'external-identifier': self.assetMetadata['PFA full accession number'],
 			'condition': self.assetMetadata['Original Material Condition'],
@@ -236,8 +239,8 @@ class Asset:
 		print("METADATA DICT:")
 		print(md)
 		### COMMENTED OUT FOR TESTING
-		#r = upload(self.assetMetadata['Access copy filename'], files=self.localAssetPaths, metadata=md)
-		r = upload(identifier, files=self.localAssetPaths, metadata=md)
+		r = upload(self.assetMetadata['Access copy filename'], files=self.localAssetPaths, metadata=md)
+		#r = upload(identifier, files=self.localAssetPaths, metadata=md)
 		# consider rewriting the below? see: https://python-forum.io/Thread-Response-200-little-help
 		print(r[0].status_code)
 		if r[0].status_code == 200:
@@ -273,8 +276,40 @@ def parse_resourcespace_csv(csvPath,_user):
 			currentAsset.post_to_ia()
 			del currentAsset
 
+def parse_drive_url(url):
+	try:
+		file_google_id = re.match(
+			r"(https:\/\/drive\.google\.com\/file\/d\/)([A-Za-z0-9-_]+)(\/.*)",
+			url
+			).group(2)
+		timestamp = time.strftime("%Y-%m-%dT%H-%M-%S")
+		dest_path = 'csvs/'+timestamp+'.csv'
+		GoogleDriveDownloader.download_file_from_google_drive(
+			file_id=file_google_id,
+			dest_path= 'csvs/'+timestamp+'.csv'
+			)
+		time.sleep(2)
+		local_csv_path = dest_path
+	except:
+		local_csv_path =  None
+
+	print("LOCAL CSV PATH")
+	print(local_csv_path)
+
+	return local_csv_path
+
 def define_resourcespace_csv():
-	csvPath = input("drag and drop path to CSV with ResourceSpace metadata:")
+	csvPath = input("drag and drop path to CSV with ResourceSpace metadata, or paste a Google Drive link here:")
+	if not csvPath.startswith("https://drive"):
+		pass
+	else:
+		csvPath = parse_drive_url(csvPath)
+		if not csvPath:
+			print("YOU MESSED UP! SOMETHINGS UP WITH THE DRIVE LINK OR THE LOCAL FILEPATH")
+			sys.exit()
+		else:
+			pass
+
 	return csvPath
 
 def main():
