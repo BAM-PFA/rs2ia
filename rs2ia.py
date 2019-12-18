@@ -13,6 +13,9 @@ import ast
 import re
 from internetarchive import upload
 
+# COUNTER IS FOR TESTING PURPOSES
+counter=1
+
 class User:
 	'''
 	Define a user who will be connecting to
@@ -36,8 +39,12 @@ class User:
 		try:
 			os.path.isfile('/home/.config/ia.ini')
 		except FileNotFoundError:
-			command = ["ia","configure"]
-			# ia configure
+			print("Your Internet Archive credentials are missing! There should be a config file at /home/.config/ia.ini.")
+			print("If this script does not prompt you to enter your archive.org credentials, please exit and run `ia configure` in the terminal.")
+			# not sure that below works in all cases - should run the bashCommand as defined in line below, then communicate output errors
+			bashCommand = "ia configure"
+			process = subprocess.Popen(bashCommand.split(), stdout=subprocess.PIPE)
+			output, error = process.communicate()
 		else:
 			pass
 
@@ -96,16 +103,18 @@ class Asset:
 	def __init__(
 		self,
 		rsAssetID=None,
-		localAssetPaths=[],
+		# localAssetPaths=None,
 		assetMetadata={},
 		_user=None
 		):
-		self.localAssetPaths = localAssetPaths
+		self.localAssetPaths = []
 		self.assetMetadata = assetMetadata
 		self.rsAssetID = self.assetMetadata['Resource ID(s)'] # this value will come from a metadata CSV file
-		self.collection='TVTV', # archive.org collection will always be 'TVTV'
-		self.mediatype='movies', # archive.org media type will always be 'movies'
-		self._user=_user
+		self.collection = 'pacificfilmarchive' # IN FUTURE SHOULD BE 'TVTV' as well (once archive.org collection is created)
+		self.collection2 = 'stream_only'
+		#self.license = 'https://creativecommons.org/licenses/by-nc-nd/4.0/'
+		self.mediatype ='movies' # archive.org media type will always be 'movies'
+		self._user = _user
 		self.rsAPI = ResourceSpaceAPI(_user)
 
 	def get_local_asset_path(self):
@@ -121,13 +130,20 @@ class Asset:
 				"mp4"
 				)
 			)
-		# query API
-		self.primaryAssetPath = self.rsAPI.query(
-			"get_resource_path",
-			parameters,
-			self._user
-			)
-		print("PRIMARY ASSET PATH")
+		# query API for filepath of primary asset as hosted on ResourceSpace - COMMENTED OUT FOR TESTING
+		# self.primaryAssetPath = self.rsAPI.query(
+		# 	"get_resource_path",
+		# 	parameters,
+		# 	self._user
+		# 	)
+
+		### THIS IS FAKE STUFF FOR TESTING. THERE ARE 3 FAKE FILES: 1bampfaTVTV.mp4, 2bampfaTVTV.mp4, 3bampfaTVTV.mp4
+		global counter
+		self.primaryAssetPath = os.path.join("/Users/bampfa/Documents/GitHub/rs2ia/fakes/",str(counter)+"bampfaTVTV.mp4")
+		counter += 1
+		# END FAKE STUFF FOR TESTING
+
+		print("PRIMARY ASSET PATH:")
 		print(self.primaryAssetPath)
 		self.localAssetPaths.append(self.primaryAssetPath)
 
@@ -141,7 +157,7 @@ class Asset:
 			parameters,
 			self._user
 			)
-		print("ALT ASSET PATH")
+		print("ALT ASSET PATH:")
 		print(self.alternativeAssetDict)
 		# get the ref ID for the alternative asset and make a new query with that ID
 		refNumber = re.match(r"^\[{(ref\:)([0-9]+).*", self.alternativeAssetDict)
@@ -166,8 +182,9 @@ class Asset:
 			new_parameters,
 			self._user
 			)
-		self.localAssetPaths.append(self.alternativeAssetPaths)
-		print("ALL THE ASSET PATHs")
+		#### COMMENTED OUT FOR TESTING
+		# self.localAssetPaths.append(self.alternativeAssetPaths)
+		print("ALL ASSET PATHS:")
 		print(self.localAssetPaths)
 
 
@@ -181,17 +198,24 @@ class Asset:
 		For more info: archive.org Python Library: https://archive.org/services/docs/api/internetarchive/quickstart.html#metadata
 			and archive.org metadata schema: https://archive.org/services/docs/api/metadata-schema/index.html
 		'''
+		try:
+			identifier = os.path.splitext(self.assetMetadata['Access copy filename'])[0]
+		except:
+			identifier = self.assetMetadata['Access copy filename']
 		md = {
 			'collection': self.collection,
+			'collection': self.collection2,
+			'rights': 'This is a rights statement',
 			'mediatype': self.mediatype,
+			#'licenseurl': self.license,
 			'creator': self.assetMetadata['Directors / Filmmakers'],
 			'contributor': self.assetMetadata['Resource type'],
-			'identifier': self.assetMetadata['Access copy filename'],
+			'identifier': identifier,
 			'title': self.assetMetadata['Title'],
 			'date': self.assetMetadata['Release Date'],
-			# Original columns 'Notes,' 'Alternative Title,' 'Credits' should be concatenated manually by operator
+			# Original columns 'Notes,' 'Alternative Title,' 'Credits' should be concatenated manually by operator into single column 'Notes'
 			'description': self.assetMetadata['Notes'],
-			# Original columns 'Medium of original,' 'Dimensions of original,' 'Original video standard,' 'Generation' columns should be concatenated manually by operator
+			# Original columns 'Medium of original,' 'Dimensions of original,' 'Original video standard,' 'Generation' columns should be concatenated manually by operator into single column 'Medium of original'
 			'source': self.assetMetadata['Medium of original'],
 			# 'frame rate' column should be normalized into numbers manually by operator
 			'frames_per_second': self.assetMetadata['Frame rate'],
@@ -205,9 +229,17 @@ class Asset:
 			'color': self.assetMetadata['Color characteristics']
 		}
 		# archive.org Python Library, 'uploading': https://archive.org/services/docs/api/internetarchive/quickstart.html#uploading
-		print([self.assetMetadata['Access copy filename'], self.localAssetPaths, md])
-		r = upload(self.assetMetadata['Access copy filename'], files=self.localAssetPaths, metadata=md)
+		print("ACCESS COPY FILENAME:")
+		print(identifier)
+		print("LOCAL ASSET PATHS:")
+		print(self.localAssetPaths)
+		print("METADATA DICT:")
+		print(md)
+		### COMMENTED OUT FOR TESTING
+		#r = upload(self.assetMetadata['Access copy filename'], files=self.localAssetPaths, metadata=md)
+		r = upload(identifier, files=self.localAssetPaths, metadata=md)
 		# consider rewriting the below? see: https://python-forum.io/Thread-Response-200-little-help
+		print(r[0].status_code)
 		if r[0].status_code == 200:
 			print("Uploaded")
 		else:
@@ -230,7 +262,10 @@ def parse_resourcespace_csv(csvPath,_user):
 				)
 			# get_local_asset_path uses the rsAssetID to find the local filepath of the asset
 			currentAsset.get_local_asset_path()
-			currentAsset.get_local_alternative_asset_paths()
+			try:
+				currentAsset.get_local_alternative_asset_paths()
+			except:
+				pass
 			print(
 				currentAsset.rsAssetID,
 				currentAsset.localAssetPaths
@@ -244,7 +279,6 @@ def define_resourcespace_csv():
 
 def main():
 	_user = User()
-	# rsAPI = ResourceSpaceAPI(_user)
 	print("Hello, "+_user.rsUserName)
 	csvPath = define_resourcespace_csv()
 	parse_resourcespace_csv(csvPath,_user)
