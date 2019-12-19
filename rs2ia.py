@@ -166,10 +166,11 @@ class Asset:
 		print("ALT ASSET PATH:")
 		print(self.alternativeAssetDict)
 		# get the ref ID for the alternative asset and make a new query with that ID
-		refNumber = re.match(r"^\[{(ref\:)([0-9]+).*", self.alternativeAssetDict)
-		extension = re.match(r"^\[{(file_extension\:)([0-9]+).*", self.alternativeAssetDict)
-		print(refNumber)
-		refNumber = refNumber.group(2)
+		refNumber = re.match(r"^\[{(ref\:)([0-9]+).*", self.alternativeAssetDict).group(2)
+		extension = re.match(r".*file_extension\:([0-9a-z]+).*", self.alternativeAssetDict).group(1)
+		print("ALT FILE EXTENSION")
+		print(extension)
+		print("ALT FILE REFERENCE NUMBER")
 		print(refNumber)
 		new_parameters = (
 			"param1={}"
@@ -211,6 +212,7 @@ class Asset:
 		except:
 			identifier = self.assetMetadata['Access copy filename']
 		md = {
+			# LET'S THINK ABOUT HOW TO MAKE THIS SET OF MD MORE AGNOSTIC/GENERALIZABLE
 			'collection': self.collection,
 			'collection': self.collection2,
 			'rights': 'This is a rights statement',
@@ -236,6 +238,9 @@ class Asset:
 			'sound': self.assetMetadata['PFA item sound characteristics'],
 			'color': self.assetMetadata['Color characteristics']
 		}
+		# get rid of empty values in the md dictionary
+		md = {k: v for k, v in md.items() if v not in (None,'')}
+
 		# archive.org Python Library, 'uploading': https://archive.org/services/docs/api/internetarchive/quickstart.html#uploading
 		print("ACCESS COPY FILENAME:")
 		print(identifier)
