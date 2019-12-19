@@ -244,8 +244,9 @@ class Asset:
 		print("METADATA DICT:")
 		print(md)
 		### COMMENTED OUT FOR TESTING
-		r = upload(self.assetMetadata['Access copy filename'], files=self.localAssetPaths, metadata=md)
-		#r = upload(identifier, files=self.localAssetPaths, metadata=md)
+		# from the ia package documentation:
+		# r = upload('<identifier>', files=['foo.txt', 'bar.mov'], metadata=md)
+		r = upload(identifier, files=self.localAssetPaths, metadata=md)
 		# consider rewriting the below? see: https://python-forum.io/Thread-Response-200-little-help
 		print(r[0].status_code)
 		if r[0].status_code == 200:
