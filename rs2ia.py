@@ -151,10 +151,13 @@ class Asset:
 		self.localAssetPaths.append(self.primaryAssetPath)
 
 	def get_local_alternative_asset_paths(self):
-		# get filepaths for alternative files associated with the primary asset. see https://www.resourcespace.com/knowledge-base/api/get_alternative_files
+		# get filepaths for alternative files associated with the primary asset.
+		# see https://www.resourcespace.com/knowledge-base/api/get_alternative_files
 		# construct parameters of API call as a string
-		parameters = "param1={}".format(self.rsAssetID)
-		# query API; result is a dictionary of information about the alternative files, but no actual filepaths
+		parameters = "param1={}&param2=&param3=".format(self.rsAssetID)
+		# query API; result is a dictionary of information about
+		# the alternative files, but no actual filepaths
+		# also, it's not a valid Python dict, it's maybe a PHP array?
 		self.alternativeAssetDict = self.rsAPI.query(
 			"get_alternative_files",
 			parameters,
@@ -164,6 +167,7 @@ class Asset:
 		print(self.alternativeAssetDict)
 		# get the ref ID for the alternative asset and make a new query with that ID
 		refNumber = re.match(r"^\[{(ref\:)([0-9]+).*", self.alternativeAssetDict)
+		extension = re.match(r"^\[{(file_extension\:)([0-9]+).*", self.alternativeAssetDict)
 		print(refNumber)
 		refNumber = refNumber.group(2)
 		print(refNumber)
@@ -172,11 +176,12 @@ class Asset:
 			"&param2=1"
 			"&param3="
 			"&param4="
-			"&param5="
+			"&param5={}"
 			"&param6="
 			"&param7="
 			"&param8={}".format(
 				self.rsAssetID,
+				extension,
 				refNumber
 				)
 			)
