@@ -3,9 +3,7 @@
 This script (or maybe scripts eventually?) will be used to transfer
 assets and metadata from our local ResourceSpace to Internet Archive.
 """
-import ast
 import csv
-import getpass
 from google_drive_downloader import GoogleDriveDownloader # from https://github.com/ndrplz/google-drive-downloader/blob/master/google_drive_downloader/google_drive_downloader.py
 import hashlib
 from internetarchive import upload
@@ -220,7 +218,7 @@ class Asset:
 		md = {
 			# LET'S THINK ABOUT HOW TO MAKE THIS SET OF MD MORE AGNOSTIC/GENERALIZABLE
 			'collection': self.collection,
-			'collection': self.collection2,
+			'collection': self.collection2, # this overrides the previous line
 			'rights': 'This is a rights statement',
 			'mediatype': ia_mediatype,
 			#'licenseurl': self.license,
