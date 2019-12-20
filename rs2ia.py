@@ -105,22 +105,23 @@ class Asset:
 	'''
 	def __init__(
 		self,
-		rsAssetID=None,
+		rsAssetID = None,
 		# localAssetPaths=None,
-		assetMetadata={},
-		_user=None
+		assetMetadata = {},
+		_user = None,
+		mediaType = None
 		):
 		self.localAssetPaths = []
 		self.assetMetadata = assetMetadata
+		self.mediaType = mediaType
 		self.rsAssetID = self.assetMetadata['Resource ID(s)'] # this value will come from a metadata CSV file
 		self.collection = 'pacificfilmarchive' # IN FUTURE SHOULD BE 'TVTV' as well (once archive.org collection is created)
 		self.collection2 = 'stream_only'
 		#self.license = 'https://creativecommons.org/licenses/by-nc-nd/4.0/'
-		self.mediatype ='movies' # archive.org media type will always be 'movies'
 		self._user = _user
 		self.rsAPI = ResourceSpaceAPI(_user)
 
-	def get_local_asset_path(self,mediaType=None):
+	def get_local_asset_path(self):
 		# see https://www.resourcespace.com/knowledge-base/api/get_resource_path
 		# construct parameters of API call as a string
 		parameters = (
@@ -130,7 +131,7 @@ class Asset:
 			"&param4="
 			"&param5={}".format(
 				self.rsAssetID,
-				mediaType
+				self.mediaType
 				)
 			)
 		# query API for filepath of primary asset as hosted on ResourceSpace - COMMENTED OUT FOR TESTING
@@ -196,7 +197,6 @@ class Asset:
 		print("ALL ASSET PATHS:")
 		print(self.localAssetPaths)
 
-
 	def post_to_ia(self):
 		'''
 		Use the archive.org Python Library to upload an asset to archive.org,
@@ -211,12 +211,18 @@ class Asset:
 			identifier = os.path.splitext(self.assetMetadata['Access copy filename'])[0]
 		except:
 			identifier = self.assetMetadata['Access copy filename']
+
+		if self.mediaType == 'mp4':
+			ia_mediatype = 'movies'
+		elif self.mediaType == 'mp3':
+			ia_mediatype = 'audio'
+
 		md = {
 			# LET'S THINK ABOUT HOW TO MAKE THIS SET OF MD MORE AGNOSTIC/GENERALIZABLE
 			'collection': self.collection,
 			'collection': self.collection2,
 			'rights': 'This is a rights statement',
-			'mediatype': self.mediatype,
+			'mediatype': ia_mediatype,
 			#'licenseurl': self.license,
 			'creator': self.assetMetadata['Directors / Filmmakers'],
 			'contributor': self.assetMetadata['Resource type'],
@@ -240,7 +246,6 @@ class Asset:
 		}
 		# get rid of empty values in the md dictionary
 		md = {k: v for k, v in md.items() if v not in (None,'')}
-
 		# archive.org Python Library, 'uploading': https://archive.org/services/docs/api/internetarchive/quickstart.html#uploading
 		print("ACCESS COPY FILENAME:")
 		print(identifier)
@@ -272,7 +277,8 @@ def parse_resourcespace_csv(csvPath,_user, mediaType):
 			# the Asset class __init__ function defines the asset's rsAssetID, which will be stored in the same CSV row as the rest of the metadata
 			currentAsset = Asset(
 				assetMetadata=row,
-				_user=_user
+				_user=_user,
+				mediaType=mediaType
 				)
 			# get_local_asset_path uses the rsAssetID to find the local filepath of the asset
 			currentAsset.get_local_asset_path(mediaType)
