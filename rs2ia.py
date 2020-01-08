@@ -279,7 +279,7 @@ def parse_resourcespace_csv(csvPath,_user, mediaType):
 				mediaType=mediaType
 				)
 			# get_local_asset_path uses the rsAssetID to find the local filepath of the asset
-			currentAsset.get_local_asset_path(mediaType)
+			currentAsset.get_local_asset_path()
 			try:
 				currentAsset.get_local_alternative_asset_paths()
 			except:
@@ -334,11 +334,14 @@ def main():
 	mediaType = input("You want audio or video? Type 'a' for audio or 'v' for video: ")
 	if mediaType == 'a':
 		mediaType = 'mp3'
+		print("YOU CHOSE AUDIO! SUPER! THANKS!")
 	elif mediaType == 'v':
 		mediaType = 'mp4'
+		print("YOU CHOSE VIDEO! SUPER! THANKS!")
 	else:
-		print("YOU ENTERED AN INVALID MEDIA TYPE! JUST TYPE a OR v DUMMIE")
+		print("YOU ENTERED AN INVALID MEDIA TYPE! JUST TYPE a OR v")
 		sys.exit()
+	print(mediaType)
 	parse_resourcespace_csv(csvPath,_user,mediaType)
 
 if __name__ == "__main__":
