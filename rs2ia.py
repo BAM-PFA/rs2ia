@@ -215,6 +215,35 @@ class Asset:
 		elif self.mediaType == 'mp3':
 			ia_mediatype = 'audio'
 
+		# normalizing columns from csv for use in metadata dict
+		# "if" statement: if the metadata field exists (as a string), then add it to the dictionary value
+		# initializing each field to "" so that metadata dict doesn't complain that it's missing; blank fields will be removed later
+		# concatenate 'description' fields
+		self.description = ""
+		if self.assetMetadata['Notes'] :
+			self.description = "Notes: " + self.assetMetadata['Notes'] + "; "
+		if self.assetMetadata['Alternative Title'] :
+			self.description += "Alternative Title: " + self.assetMetadata['Alternative Title'] + "; "
+		if self.assetMetadata['Credits'] :
+			self.description += "Credits: " + self.assetMetadata['Credits']
+		# concatenate 'source' fields
+		self.source = ""
+		if self.assetMetadata['Medium of original'] :
+			self.source = "Medium of original: " + self.assetMetadata['Medium of original'] + "; "
+		if self.assetMetadata['Dimensions of original'] :
+			self.source += "Dimensions of original: " + self.assetMetadata['Dimensions of original'] + "; "
+		if self.assetMetadata['Original video standard'] :
+			self.source += "Original video standard: " + self.assetMetadata['Original video standard'] + "; "
+		if self.assetMetadata['Generation'] :
+			self.source += "Generation: " + self.assetMetadata['Generation']
+		# remove "fps" and leading/trailing spaces from 'frame rate' column
+		self.frames_per_second = ""
+		self.frames_per_second = self.assetMetadata['Frame rate'].strip(' fps').strip()
+		# add 'urn:bampfa_accession_number:' to accession # (this conforms to IA style guide)
+		self.externalidentifier = ""
+		if self.assetMetadata['PFA full accession number'] :
+			self.externalidentifier = "urn:bampfa_accession_number:" + self.assetMetadata['PFA full accession number']
+
 		md = {
 			# LET'S THINK ABOUT HOW TO MAKE THIS SET OF MD MORE AGNOSTIC/GENERALIZABLE
 			'collection': self.collection,
@@ -227,17 +256,13 @@ class Asset:
 			'identifier': identifier,
 			'title': self.assetMetadata['Title'],
 			'date': self.assetMetadata['Release Date'],
-			# Original columns 'Notes,' 'Alternative Title,' 'Credits' should be concatenated manually by operator into single column 'Notes'
-			'description': self.assetMetadata['Notes'],
-			# Original columns 'Medium of original,' 'Dimensions of original,' 'Original video standard,' 'Generation' columns should be concatenated manually by operator into single column 'Medium of original'
-			'source': self.assetMetadata['Medium of original'],
-			# 'frame rate' column should be normalized into numbers manually by operator
-			'frames_per_second': self.assetMetadata['Frame rate'],
+			'description': self.description,
+			'source': self.source,
+			'frames_per_second': self.frames_per_second,
 			# 'video size' column should be split into 'Video height' and 'Video width' numbers manually by operator
 			# 'source_pixel_width': self.assetMetadata['Video height'],
 			# 'source_pixel_height': self.assetMetadata['Video width'],
-			# 'PFA full accession number' column should be normalized to 'urn:bampfa_accession_number:XXXX' manually by operator
-			'external-identifier': self.assetMetadata['PFA full accession number'],
+			'external-identifier': self.externalidentifier,
 			'condition': self.assetMetadata['Original Material Condition'],
 			'sound': self.assetMetadata['PFA item sound characteristics'],
 			'color': self.assetMetadata['Color characteristics']
