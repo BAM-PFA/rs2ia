@@ -123,6 +123,7 @@ class Asset:
 		self.description = ""
 		self.source = ""
 		self.externalidentifier = ""
+		self.date = ""
 
 	def get_local_asset_path(self):
 		# see https://www.resourcespace.com/knowledge-base/api/get_resource_path
@@ -229,6 +230,8 @@ class Asset:
 		# concatenate 'description' fields
 		if self.assetMetadata['Notes'] : # if the metadata field exists (as a string), then add it to the dictionary value
 			self.description = "Notes: " + self.assetMetadata['Notes'] + "; "
+		if self.assetMetadata['Description'] :
+			self.description = "Description: " + self.assetMetadata['Description'] + "; "
 		if self.assetMetadata['Alternative Title'] :
 			self.description += "Alternative Title: " + self.assetMetadata['Alternative Title'] + "; "
 		if self.assetMetadata['Credits'] :
@@ -238,33 +241,65 @@ class Asset:
 			self.source = "Medium of original: " + self.assetMetadata['Medium of original'] + "; "
 		if self.assetMetadata['Dimensions of original'] :
 			self.source += "Dimensions of original: " + self.assetMetadata['Dimensions of original'] + "; "
-		if self.assetMetadata['Original video standard'] :
-			self.source += "Original video standard: " + self.assetMetadata['Original video standard'] + "; "
-		if self.assetMetadata['Generation'] :
-			self.source += "Generation: " + self.assetMetadata['Generation']
 		# add 'urn:bampfa_accession_number:' to accession # (this conforms to IA style guide)
 		if self.assetMetadata['PFA full accession number'] :
 			self.externalidentifier = "urn:bampfa_accession_number:" + self.assetMetadata['PFA full accession number']
+		if self.assetMetadata['Date of recording'] :
+			self.date = self.assetMetadata['Date of recording']
+		elif self.assetMetadata['Release Date'] :
+			self.date = self.assetMetadata['Release Date']
+		# audio- and video-specific fields
+		if ia_mediatype == 'movies' :
+			if self.assetMetadata['Original video format'] :
+				self.source += "Original video format: " + self.assetMetadata['Original video format'] + "; "
+			if self.assetMetadata['Original video standard'] :
+				self.source += "Original video standard: " + self.assetMetadata['Original video standard'] + "; "
+			if self.assetMetadata['Generation'] :
+				self.source += "Generation: " + self.assetMetadata['Generation']
+		elif ia_mediatype == 'audio' :
+			if self.assetMetadata['PFA film series'] :
+				self.description = "Pacific Film Archive film series: " + self.assetMetadata['PFA film series'] + "; "
+			if self.assetMetadata['Event title'] :
+				self.description = "Event title: " + self.assetMetadata['Event title'] + "; "
+			if self.assetMetadata['Speaker/Interviewee'] :
+				self.description = "Speaker/Interviewee: " + self.assetMetadata['Speaker/Interviewee'] + "; "
+			if self.assetMetadata['Subject(s): Film title(s)'] :
+				self.description = "Subject(s): Film title(s): " + self.assetMetadata['Subject(s): Film title(s)'] + "; "
+			if self.assetMetadata['Subject(s): Topics(s)'] :
+				self.description = "Subject(s): Topics(s): " + self.assetMetadata['Subject(s): Topics(s)'] + "; "
 
-		md = {
-			# LET'S THINK ABOUT HOW TO MAKE THIS SET OF MD MORE AGNOSTIC/GENERALIZABLE
+		# general MD dict
+		general_md = {
 			'collection': self.collection,
 			'collection': self.collection2, # this overrides the previous line
-			'rights': 'This is a rights statement',
+			'rights': self.assetMetadata['Copyright statement'],
 			'mediatype': ia_mediatype,
 			#'licenseurl': self.license,
-			'creator': self.assetMetadata['Directors / Filmmakers'],
 			'contributor': self.assetMetadata['Resource type'],
 			'identifier': identifier,
+			'external-identifier': self.externalidentifier,
 			'title': self.assetMetadata['Title'],
-			'date': self.assetMetadata['Release Date'],
+			'date': self.date,
 			'description': self.description,
 			'source': self.source,
-			'external-identifier': self.externalidentifier,
-			'condition': self.assetMetadata['Original Material Condition'],
-			'sound': self.assetMetadata['PFA item sound characteristics'],
-			'color': self.assetMetadata['Color characteristics']
+			'language': self.assetMetadata['Language']
 		}
+		movies_md = {
+			'sound': self.assetMetadata['PFA item sound characteristics'],
+			'color': self.assetMetadata['Color characteristics'],
+			'creator': self.assetMetadata['Directors / Filmmakers'],
+		}
+		# audio_md = {
+		# 	# need appropriate creator field for audio; will all audio be PFA lecture series?
+		# }
+
+		# concatenate dictionaries
+		if ia_mediatype == 'movies' :
+			md = dict(general_md)
+			md.update(movies_md)
+		elif ia_mediatype == 'audio' :
+			md = dict(general_md)
+
 		# get rid of empty values in the md dictionary
 		md = {k: v for k, v in md.items() if v not in (None,'')}
 		# archive.org Python Library, 'uploading': https://archive.org/services/docs/api/internetarchive/quickstart.html#uploading
