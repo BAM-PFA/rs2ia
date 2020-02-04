@@ -215,12 +215,15 @@ class Asset:
 		elif self.mediaType == 'mp3':
 			ia_mediatype = 'audio'
 
-		# normalizing columns from csv for use in metadata dict
-		# "if" statement: if the metadata field exists (as a string), then add it to the dictionary value
-		# initializing each field to "" so that metadata dict doesn't complain that it's missing; blank fields will be removed later
+		'''
+		Normalizing columns from csv for use in metadata dict.
+			This is required because the RS and IA metadata fields do not directly
+			map to each other. Each field is initialized to "" so that the metadata
+			dict doesn't complain that it's missing; blank fields will be removed later.
+		'''
 		# concatenate 'description' fields
 		self.description = ""
-		if self.assetMetadata['Notes'] :
+		if self.assetMetadata['Notes'] : # if the metadata field exists (as a string), then add it to the dictionary value
 			self.description = "Notes: " + self.assetMetadata['Notes'] + "; "
 		if self.assetMetadata['Alternative Title'] :
 			self.description += "Alternative Title: " + self.assetMetadata['Alternative Title'] + "; "

@@ -46,7 +46,7 @@ Creating and downloading the spreadsheet:
 
 
 Normalizing the spreadsheet:  
-In the downloaded CSV, combine or split up the following fields:
+** The script should normalize all of the following fields itself! ** BUT, if you encounter any trouble, you can also manually normalize the CSV by combining or splitting up the following fields:
   * Combine the columns 'Notes,' 'Alternative Title,' 'Credits' into a single column 'Notes'
   * Combine the columns 'Medium of original,' 'Dimensions of original,' 'Original video standard,' 'Generation' columns into a single column 'Medium of original'
   * Normalize the 'frame rate' column into numbers only (e.g., remove the word 'fps')
