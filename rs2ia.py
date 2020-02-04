@@ -119,6 +119,11 @@ class Asset:
 		self._user = _user
 		self.rsAPI = ResourceSpaceAPI(_user)
 
+		# initializing metadata attributes required/desired by IA that don't appear in RS
+		self.description = ""
+		self.source = ""
+		self.externalidentifier = ""
+
 	def get_local_asset_path(self):
 		# see https://www.resourcespace.com/knowledge-base/api/get_resource_path
 		# construct parameters of API call as a string
@@ -222,7 +227,6 @@ class Asset:
 			dict doesn't complain that it's missing; blank fields will be removed later.
 		'''
 		# concatenate 'description' fields
-		self.description = ""
 		if self.assetMetadata['Notes'] : # if the metadata field exists (as a string), then add it to the dictionary value
 			self.description = "Notes: " + self.assetMetadata['Notes'] + "; "
 		if self.assetMetadata['Alternative Title'] :
@@ -230,7 +234,6 @@ class Asset:
 		if self.assetMetadata['Credits'] :
 			self.description += "Credits: " + self.assetMetadata['Credits']
 		# concatenate 'source' fields
-		self.source = ""
 		if self.assetMetadata['Medium of original'] :
 			self.source = "Medium of original: " + self.assetMetadata['Medium of original'] + "; "
 		if self.assetMetadata['Dimensions of original'] :
@@ -240,7 +243,6 @@ class Asset:
 		if self.assetMetadata['Generation'] :
 			self.source += "Generation: " + self.assetMetadata['Generation']
 		# add 'urn:bampfa_accession_number:' to accession # (this conforms to IA style guide)
-		self.externalidentifier = ""
 		if self.assetMetadata['PFA full accession number'] :
 			self.externalidentifier = "urn:bampfa_accession_number:" + self.assetMetadata['PFA full accession number']
 
