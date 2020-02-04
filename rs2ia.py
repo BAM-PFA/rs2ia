@@ -119,6 +119,12 @@ class Asset:
 		self._user = _user
 		self.rsAPI = ResourceSpaceAPI(_user)
 
+		# initializing metadata attributes required/desired by IA that don't appear in RS
+		self.description = ""
+		self.source = ""
+		self.externalidentifier = ""
+		self.date = ""
+
 	def get_local_asset_path(self):
 		# see https://www.resourcespace.com/knowledge-base/api/get_resource_path
 		# construct parameters of API call as a string
@@ -215,35 +221,90 @@ class Asset:
 		elif self.mediaType == 'mp3':
 			ia_mediatype = 'audio'
 
-		md = {
-			# LET'S THINK ABOUT HOW TO MAKE THIS SET OF MD MORE AGNOSTIC/GENERALIZABLE
+		'''
+		Normalizing columns from csv for use in metadata dict.
+			This is required because the RS and IA metadata fields do not directly
+			map to each other. Each field is initialized to "" so that the metadata
+			dict doesn't complain that it's missing; blank fields will be removed later.
+		'''
+		# concatenate 'description' fields
+		if self.assetMetadata['Notes'] : # if the metadata field exists (as a string), then add it to the dictionary value
+			self.description = "Notes: " + self.assetMetadata['Notes'] + ". "
+		if self.assetMetadata['Description'] :
+			self.description = "Description: " + self.assetMetadata['Description'] + ". "
+		if self.assetMetadata['Alternative Title'] :
+			self.description += "Alternative Title: " + self.assetMetadata['Alternative Title'] + ". "
+		if self.assetMetadata['Credits'] :
+			self.description += "Credits: " + self.assetMetadata['Credits']
+		# concatenate 'source' fields
+		if self.assetMetadata['Medium of original'] :
+			self.source = "Medium of original: " + self.assetMetadata['Medium of original'] + ". "
+		if self.assetMetadata['Dimensions of original'] :
+			self.source += "Dimensions of original: " + self.assetMetadata['Dimensions of original'] + ". "
+		# add 'urn:bampfa_accession_number:' to accession # (this conforms to IA style guide)
+		if self.assetMetadata['PFA full accession number'] :
+			self.externalidentifier = "urn:bampfa_accession_number:" + self.assetMetadata['PFA full accession number']
+		if self.assetMetadata['Date of recording'] :
+			self.date = self.assetMetadata['Date of recording']
+		elif self.assetMetadata['Release Date'] :
+			self.date = self.assetMetadata['Release Date']
+		# audio- and video-specific fields
+		if ia_mediatype == 'movies' :
+			if self.assetMetadata['Original video format'] :
+				self.source += "Original video format: " + self.assetMetadata['Original video format'] + ". "
+			if self.assetMetadata['Original video standard'] :
+				self.source += "Original video standard: " + self.assetMetadata['Original video standard'] + ". "
+			if self.assetMetadata['Generation'] :
+				self.source += "Generation: " + self.assetMetadata['Generation']
+		elif ia_mediatype == 'audio' :
+			if self.assetMetadata['PFA film series'] :
+				self.description = "Pacific Film Archive film series: " + self.assetMetadata['PFA film series'] + ". "
+			if self.assetMetadata['Event title'] :
+				self.description = "Event title: " + self.assetMetadata['Event title'] + ". "
+			if self.assetMetadata['Speaker/Interviewee'] :
+				self.description = "Speaker/Interviewee: " + self.assetMetadata['Speaker/Interviewee'] + ". "
+			if self.assetMetadata['Subject(s): Film title(s)'] :
+				self.description = "Subject(s): Film title(s): " + self.assetMetadata['Subject(s): Film title(s)'] + ". "
+			if self.assetMetadata['Subject(s): Topics(s)'] :
+				self.description = "Subject(s): Topics(s): " + self.assetMetadata['Subject(s): Topics(s)'] + ". "
+
+		# general MD dict
+		general_md = {
 			'collection': self.collection,
 			'collection': self.collection2, # this overrides the previous line
-			'rights': 'This is a rights statement',
+			'rights': self.assetMetadata['Copyright statement'],
 			'mediatype': ia_mediatype,
 			#'licenseurl': self.license,
-			'creator': self.assetMetadata['Directors / Filmmakers'],
 			'contributor': self.assetMetadata['Resource type'],
 			'identifier': identifier,
+			'external-identifier': self.externalidentifier,
 			'title': self.assetMetadata['Title'],
-			'date': self.assetMetadata['Release Date'],
-			# Original columns 'Notes,' 'Alternative Title,' 'Credits' should be concatenated manually by operator into single column 'Notes'
-			'description': self.assetMetadata['Notes'],
-			# Original columns 'Medium of original,' 'Dimensions of original,' 'Original video standard,' 'Generation' columns should be concatenated manually by operator into single column 'Medium of original'
-			'source': self.assetMetadata['Medium of original'],
-			# 'frame rate' column should be normalized into numbers manually by operator
-			'frames_per_second': self.assetMetadata['Frame rate'],
-			# 'video size' column should be split into 'Video height' and 'Video width' numbers manually by operator
-			# 'source_pixel_width': self.assetMetadata['Video height'],
-			# 'source_pixel_height': self.assetMetadata['Video width'],
-			# 'PFA full accession number' column should be normalized to 'urn:bampfa_accession_number:XXXX' manually by operator
-			'external-identifier': self.assetMetadata['PFA full accession number'],
-			'condition': self.assetMetadata['Original Material Condition'],
-			'sound': self.assetMetadata['PFA item sound characteristics'],
-			'color': self.assetMetadata['Color characteristics']
+			'date': self.date,
+			'description': self.description,
+			'source': self.source,
+			'language': self.assetMetadata['Language']
 		}
+		movies_md = {
+			'sound': self.assetMetadata['PFA item sound characteristics'],
+			'color': self.assetMetadata['Color characteristics'],
+			'creator': self.assetMetadata['Directors / Filmmakers'],
+		}
+		# audio_md = {
+		# 	# need appropriate creator field for audio; will all audio be PFA lecture series?
+		# }
+
+		# concatenate dictionaries
+		if ia_mediatype == 'movies' :
+			md = dict(general_md)
+			md.update(movies_md)
+		elif ia_mediatype == 'audio' :
+			md = dict(general_md)
+
 		# get rid of empty values in the md dictionary
 		md = {k: v for k, v in md.items() if v not in (None,'')}
+		# remove line breaks that display as literal "<br/>"
+		md = {v.replace('<br/>', ' '): k
+			for k, v in md.items()}
 		# archive.org Python Library, 'uploading': https://archive.org/services/docs/api/internetarchive/quickstart.html#uploading
 		print("ACCESS COPY FILENAME:")
 		print(identifier)
