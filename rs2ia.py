@@ -243,6 +243,12 @@ class Asset:
 		self.externalidentifier = ""
 		if self.assetMetadata['PFA full accession number'] :
 			self.externalidentifier = "urn:bampfa_accession_number:" + self.assetMetadata['PFA full accession number']
+		# split 'video size' column into 'Video height' and 'Video width' numbers
+		self.videoSize = ""
+		if self.assetMetadata['Video size'] :
+			self.videoSize = self.assetMetadata['Video size'].split("x")
+			self.videoWidth = self.videoSize[0]
+			self.videoHeight = self.videoSize[1]
 
 		md = {
 			# LET'S THINK ABOUT HOW TO MAKE THIS SET OF MD MORE AGNOSTIC/GENERALIZABLE
@@ -259,9 +265,8 @@ class Asset:
 			'description': self.description,
 			'source': self.source,
 			'frames_per_second': self.frames_per_second,
-			# 'video size' column should be split into 'Video height' and 'Video width' numbers manually by operator
-			# 'source_pixel_width': self.assetMetadata['Video height'],
-			# 'source_pixel_height': self.assetMetadata['Video width'],
+			'source_pixel_width': self.videoWidth,
+			'source_pixel_height': self.videoHeight,
 			'external-identifier': self.externalidentifier,
 			'condition': self.assetMetadata['Original Material Condition'],
 			'sound': self.assetMetadata['PFA item sound characteristics'],
