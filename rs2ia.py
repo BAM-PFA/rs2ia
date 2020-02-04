@@ -229,18 +229,18 @@ class Asset:
 		'''
 		# concatenate 'description' fields
 		if self.assetMetadata['Notes'] : # if the metadata field exists (as a string), then add it to the dictionary value
-			self.description = "Notes: " + self.assetMetadata['Notes'] + "; "
+			self.description = "Notes: " + self.assetMetadata['Notes'] + ". "
 		if self.assetMetadata['Description'] :
-			self.description = "Description: " + self.assetMetadata['Description'] + "; "
+			self.description = "Description: " + self.assetMetadata['Description'] + ". "
 		if self.assetMetadata['Alternative Title'] :
-			self.description += "Alternative Title: " + self.assetMetadata['Alternative Title'] + "; "
+			self.description += "Alternative Title: " + self.assetMetadata['Alternative Title'] + ". "
 		if self.assetMetadata['Credits'] :
 			self.description += "Credits: " + self.assetMetadata['Credits']
 		# concatenate 'source' fields
 		if self.assetMetadata['Medium of original'] :
-			self.source = "Medium of original: " + self.assetMetadata['Medium of original'] + "; "
+			self.source = "Medium of original: " + self.assetMetadata['Medium of original'] + ". "
 		if self.assetMetadata['Dimensions of original'] :
-			self.source += "Dimensions of original: " + self.assetMetadata['Dimensions of original'] + "; "
+			self.source += "Dimensions of original: " + self.assetMetadata['Dimensions of original'] + ". "
 		# add 'urn:bampfa_accession_number:' to accession # (this conforms to IA style guide)
 		if self.assetMetadata['PFA full accession number'] :
 			self.externalidentifier = "urn:bampfa_accession_number:" + self.assetMetadata['PFA full accession number']
@@ -251,22 +251,22 @@ class Asset:
 		# audio- and video-specific fields
 		if ia_mediatype == 'movies' :
 			if self.assetMetadata['Original video format'] :
-				self.source += "Original video format: " + self.assetMetadata['Original video format'] + "; "
+				self.source += "Original video format: " + self.assetMetadata['Original video format'] + ". "
 			if self.assetMetadata['Original video standard'] :
-				self.source += "Original video standard: " + self.assetMetadata['Original video standard'] + "; "
+				self.source += "Original video standard: " + self.assetMetadata['Original video standard'] + ". "
 			if self.assetMetadata['Generation'] :
 				self.source += "Generation: " + self.assetMetadata['Generation']
 		elif ia_mediatype == 'audio' :
 			if self.assetMetadata['PFA film series'] :
-				self.description = "Pacific Film Archive film series: " + self.assetMetadata['PFA film series'] + "; "
+				self.description = "Pacific Film Archive film series: " + self.assetMetadata['PFA film series'] + ". "
 			if self.assetMetadata['Event title'] :
-				self.description = "Event title: " + self.assetMetadata['Event title'] + "; "
+				self.description = "Event title: " + self.assetMetadata['Event title'] + ". "
 			if self.assetMetadata['Speaker/Interviewee'] :
-				self.description = "Speaker/Interviewee: " + self.assetMetadata['Speaker/Interviewee'] + "; "
+				self.description = "Speaker/Interviewee: " + self.assetMetadata['Speaker/Interviewee'] + ". "
 			if self.assetMetadata['Subject(s): Film title(s)'] :
-				self.description = "Subject(s): Film title(s): " + self.assetMetadata['Subject(s): Film title(s)'] + "; "
+				self.description = "Subject(s): Film title(s): " + self.assetMetadata['Subject(s): Film title(s)'] + ". "
 			if self.assetMetadata['Subject(s): Topics(s)'] :
-				self.description = "Subject(s): Topics(s): " + self.assetMetadata['Subject(s): Topics(s)'] + "; "
+				self.description = "Subject(s): Topics(s): " + self.assetMetadata['Subject(s): Topics(s)'] + ". "
 
 		# general MD dict
 		general_md = {
