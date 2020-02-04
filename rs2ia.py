@@ -302,6 +302,9 @@ class Asset:
 
 		# get rid of empty values in the md dictionary
 		md = {k: v for k, v in md.items() if v not in (None,'')}
+		# remove line breaks that display as literal "<br/>"
+		md = {v.replace('<br/>', ' '): k
+			for k, v in md.items()}
 		# archive.org Python Library, 'uploading': https://archive.org/services/docs/api/internetarchive/quickstart.html#uploading
 		print("ACCESS COPY FILENAME:")
 		print(identifier)
