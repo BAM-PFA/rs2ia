@@ -49,8 +49,6 @@ Normalizing the spreadsheet:
 ** The script should normalize all of the following fields itself! ** BUT, if you encounter any trouble, you can also manually normalize the CSV by combining or splitting up the following fields:
   * Combine the columns 'Notes,' 'Alternative Title,' 'Credits' into a single column 'Notes'
   * Combine the columns 'Medium of original,' 'Dimensions of original,' 'Original video standard,' 'Generation' columns into a single column 'Medium of original'
-  * Normalize the 'frame rate' column into numbers only (e.g., remove the word 'fps')
-  * Split the 'video size' column into 'Video height' and 'Video width'; only use numbers (e.g., turn '640x480' into '640' and '480')
   * Add 'urn:bampfa_accession_number:' (no quotes) before each the accession number in the 'PFA full accession number' column
 
 

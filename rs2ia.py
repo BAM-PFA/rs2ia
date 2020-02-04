@@ -239,19 +239,10 @@ class Asset:
 			self.source += "Original video standard: " + self.assetMetadata['Original video standard'] + "; "
 		if self.assetMetadata['Generation'] :
 			self.source += "Generation: " + self.assetMetadata['Generation']
-		# remove "fps" and leading/trailing spaces from 'frame rate' column
-		self.frames_per_second = ""
-		self.frames_per_second = self.assetMetadata['Frame rate'].strip(' fps').strip()
 		# add 'urn:bampfa_accession_number:' to accession # (this conforms to IA style guide)
 		self.externalidentifier = ""
 		if self.assetMetadata['PFA full accession number'] :
 			self.externalidentifier = "urn:bampfa_accession_number:" + self.assetMetadata['PFA full accession number']
-		# split 'video size' column into 'Video height' and 'Video width' numbers
-		self.videoSize = ""
-		if self.assetMetadata['Video size'] :
-			self.videoSize = self.assetMetadata['Video size'].split("x")
-			self.videoWidth = self.videoSize[0]
-			self.videoHeight = self.videoSize[1]
 
 		md = {
 			# LET'S THINK ABOUT HOW TO MAKE THIS SET OF MD MORE AGNOSTIC/GENERALIZABLE
@@ -267,9 +258,6 @@ class Asset:
 			'date': self.assetMetadata['Release Date'],
 			'description': self.description,
 			'source': self.source,
-			'frames_per_second': self.frames_per_second,
-			'source_pixel_width': self.videoWidth,
-			'source_pixel_height': self.videoHeight,
 			'external-identifier': self.externalidentifier,
 			'condition': self.assetMetadata['Original Material Condition'],
 			'sound': self.assetMetadata['PFA item sound characteristics'],
