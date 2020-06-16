@@ -194,14 +194,14 @@ class Asset:
 		# there should be a 1:1 relationship between 
 		# the matched ref #'s and file extensions
 		alts = {}
-		refNumbers = re.findall(r"({ref\:)([0-9]+)")
-		extensions = re.findall(r"(,file_extension:)(\w{0,4})")
+		refNumbers = re.findall(r"({ref\:)([0-9]+)",self.alternativeAssetDict)
+		extensions = re.findall(r"(,file_extension:)(\w{0,4})",self.alternativeAssetDict)
 		if not len(refNumbers) == len(extensions):
 			print("ALTERNATIVE FILE MISMATCH BTW EXTENSIONS AND NUM OF FILES")
 			sys.exit
 		for ref in refNumbers:
 			alts[ref] = extensions[refNumbers.index(ref)]
-
+			
 		for ref, ext in alts.items():
 			print("ALT FILE EXTENSION")
 			print(ext)
