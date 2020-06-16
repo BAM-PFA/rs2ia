@@ -17,6 +17,24 @@ import time
 # # COUNTER IS FOR TESTING PURPOSES
 # counter=1
 
+rightsStatement = """This work may be protected by the U.S. Copyright Law \
+(Title 17, U.S.C.). In addition, its reproduction may be restricted by terms \
+of gift or purchase agreements, donor restrictions, privacy and publicity \
+rights, licensing and trademarks. This work is made accessible ONLY for purposes of \
+education and research. Transmission or reproduction of works protected by \
+copyright beyond that allowed by fair use requires the written permission \
+of the copyright owners. Works not in the public domain may not be \
+commercially exploited without permission of the copyright owner. \
+Responsibility for any use rests exclusively with the user.\n
+Berkeley Art Museum and Pacific Film Archive has made efforts in all\
+cases to secure permission to display copyrighted works from rights owners; \
+we are eager to hear from rights owners with any questions or concerns \
+regarding this display.\n
+If you are a legitimate copyright holder to this work and \
+would like to discuss removing it from public display, please send requests \
+to bampfa@berkeley.edu so that we can 
+"""
+
 class User:
 	'''
 	Define a user who will be connecting to
@@ -111,6 +129,13 @@ class Asset:
 		):
 		self.localAssetPaths = []
 		self.assetMetadata = assetMetadata
+		self.identifier = None
+		self.creator = None
+		self.title = None
+		self.date = None
+		self.subject = None
+		self.description = None
+		self.notes = None
 		self.mediaType = mediaType
 		self.rsAssetID = self.assetMetadata['Resource ID(s)'] # this value will come from a metadata CSV file
 		self.collection = 'pacificfilmarchive' # IN FUTURE SHOULD BE 'TVTV' as well (once archive.org collection is created)
@@ -205,11 +230,6 @@ class Asset:
 		For more info: archive.org Python Library: https://archive.org/services/docs/api/internetarchive/quickstart.html#metadata
 			and archive.org metadata schema: https://archive.org/services/docs/api/metadata-schema/index.html
 		'''
-		try:
-			identifier = os.path.splitext(self.assetMetadata['Access copy filename'])[0]
-		except:
-			identifier = self.assetMetadata['Access copy filename']
-
 		if self.mediaType == 'mp4':
 			ia_mediatype = 'movies'
 		elif self.mediaType == 'mp3':
@@ -217,25 +237,29 @@ class Asset:
 
 		md = {
 			# LET'S THINK ABOUT HOW TO MAKE THIS SET OF MD MORE AGNOSTIC/GENERALIZABLE
+			'identifier': self.identifier,
+			'mediatype': ia_mediatype,
+			'title': self.title,
 			'collection': self.collection,
 			'collection': self.collection2, # this overrides the previous line
-			'rights': 'This is a rights statement',
-			'mediatype': ia_mediatype,
-			#'licenseurl': self.license,
-			'creator': self.assetMetadata['Directors / Filmmakers'],
-			'contributor': self.assetMetadata['Resource type'],
-			'identifier': identifier,
-			'title': self.assetMetadata['Title'],
-			'date': self.assetMetadata['Release Date'],
 			# Original columns 'Notes,' 'Alternative Title,' 'Credits' should be concatenated manually by operator into single column 'Notes'
 			'description': self.assetMetadata['Notes'],
+			'subject': self.subject,
+			'date': self.date,
+			# contributor: The person or organization that provided the physical or digital media.
+			'contributor': self.assetMetadata['Resource type'],
+			'creator': self.creator,
+			'language': self.assetMetadata['Language'],
+			'rights': rightsStatement,
+			#'licenseurl': self.license,
+
 			# Original columns 'Medium of original,' 'Dimensions of original,' 'Original video standard,' 'Generation' columns should be concatenated manually by operator into single column 'Medium of original'
 			'source': self.assetMetadata['Medium of original'],
 			# 'frame rate' column should be normalized into numbers manually by operator
 			'frames_per_second': self.assetMetadata['Frame rate'],
 			# 'video size' column should be split into 'Video height' and 'Video width' numbers manually by operator
-			# 'source_pixel_width': self.assetMetadata['Video height'],
-			# 'source_pixel_height': self.assetMetadata['Video width'],
+			'source_pixel_width': self.assetMetadata['Video height'],
+			'source_pixel_height': self.assetMetadata['Video width'],
 			# 'PFA full accession number' column should be normalized to 'urn:bampfa_accession_number:XXXX' manually by operator
 			'external-identifier': self.assetMetadata['PFA full accession number'],
 			'condition': self.assetMetadata['Original Material Condition'],
@@ -261,6 +285,58 @@ class Asset:
 			print("Uploaded")
 		else:
 			print("Upload failed")
+
+	def get_core_metadata(assetMetadata):
+		'''
+		Try to get: Creator, Title, Date, Subject, Identifier
+		These values are all potentially in multiple columns, 
+		so we need to sort through the possible fields.
+		'''
+		# CREATOR
+		directors = assetMetadata['Directors / Filmmakers']
+		speakers = assetMetadata['Speaker/Interviewee']
+		_creator = assetMetadata['Creator']
+
+		self.creator = ''.join([x+"; " for x in (directors,speakers,_creator) if not x in (None,"")])
+
+		# TITLE
+		mainTitle = assetMetadata['Title']
+		altTitle = assetMetadata['Alternative Title']
+		eventTitle = assetMetadata['Event title']
+		eventSeries = assetMetadata['Event series']
+
+		self.title = ''.join([str(x)+"; " for x in (mainTitle,altTitle,eventTitle,eventSeries) if not x in (None,"")])
+
+		# DATE
+		release = assetMetadata['Release Date']
+		recordingDate = assetMetadata['Date of recording']
+		eventYear = assetMetadata['Event year']
+		_date = assetMetadata['Date']
+
+		if release not in (None,""):
+			self.date = release
+		elif recordingDate not in (None,""):
+			self.date = recordingDate
+		elif eventYear not in (None,""):
+			self.date = eventYear
+		elif _date not in (None,""):
+			self.date = _date
+
+		# SUBJECT
+		titleSubjects = assetMetadata["Subject(s): Film title(s)"]
+		topics = assetMetadata["Subject(s): Topics(s)"]
+		nameTopics = assetMetadata["Subject(s): Names"]
+
+		self.subject = ''.join([str(x)+"; " for x in (titleSubjects,topics,nameTopics) if not x in (None,"")])
+
+		# IDENTIFIER
+		try:
+			if not assetMetadata['Source canonical" name"'] in [None,'']:
+				self.identifier = assetMetadata['Source canonical" name"']
+			else:
+				self.identifier = os.path.splitext(self.assetMetadata['Access copy filename'])[0]
+		except:
+			self.identifier = self.assetMetadata['Access copy filename']
 
 def parse_resourcespace_csv(csvPath,_user, mediaType):
 	'''
