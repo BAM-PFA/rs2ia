@@ -235,6 +235,8 @@ class Asset:
 		elif self.mediaType == 'mp3':
 			ia_mediatype = 'audio'
 
+		get_core_metadata(self.assetMetadata)
+
 		md = {
 			# LET'S THINK ABOUT HOW TO MAKE THIS SET OF MD MORE AGNOSTIC/GENERALIZABLE
 			'identifier': self.identifier,
@@ -269,8 +271,8 @@ class Asset:
 		# get rid of empty values in the md dictionary
 		md = {k: v for k, v in md.items() if v not in (None,'')}
 		# archive.org Python Library, 'uploading': https://archive.org/services/docs/api/internetarchive/quickstart.html#uploading
-		print("ACCESS COPY FILENAME:")
-		print(identifier)
+		print("IDENTIFIER:")
+		print(self.identifier)
 		print("LOCAL ASSET PATHS:")
 		print(self.localAssetPaths)
 		print("METADATA DICT:")
@@ -278,7 +280,7 @@ class Asset:
 		### COMMENTED OUT FOR TESTING
 		# from the ia package documentation:
 		# r = upload('<identifier>', files=['foo.txt', 'bar.mov'], metadata=md)
-		r = upload(identifier, files=self.localAssetPaths, metadata=md)
+		r = upload(self.identifier, files=self.localAssetPaths, metadata=md)
 		# consider rewriting the below? see: https://python-forum.io/Thread-Response-200-little-help
 		print(r[0].status_code)
 		if r[0].status_code == 200:
