@@ -235,7 +235,7 @@ class Asset:
 		elif self.mediaType == 'mp3':
 			ia_mediatype = 'audio'
 
-		get_core_metadata(self.assetMetadata)
+		self.get_core_metadata(self.assetMetadata)
 
 		md = {
 			# LET'S THINK ABOUT HOW TO MAKE THIS SET OF MD MORE AGNOSTIC/GENERALIZABLE
@@ -288,7 +288,7 @@ class Asset:
 		else:
 			print("Upload failed")
 
-	def get_core_metadata(assetMetadata):
+	def get_core_metadata(self,assetMetadata):
 		'''
 		Try to get: Creator, Title, Date, Subject, Identifier
 		These values are all potentially in multiple columns, 
