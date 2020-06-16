@@ -32,7 +32,7 @@ we are eager to hear from rights owners with any questions or concerns \
 regarding this display.\n
 If you are a legitimate copyright holder to this work and \
 would like to discuss removing it from public display, please send requests \
-to bampfa@berkeley.edu so that we can 
+to bampfa@berkeley.edu.
 """
 
 class User:
@@ -187,36 +187,47 @@ class Asset:
 			parameters,
 			self._user
 			)
-		print("ALT ASSET PATH:")
+		print("ALT ASSETS FROM RS:")
 		print(self.alternativeAssetDict)
-		# get the ref ID for the alternative asset and make a new query with that ID
-		refNumber = re.match(r"^\[{(ref\:)([0-9]+).*", self.alternativeAssetDict).group(2)
-		extension = re.match(r".*file_extension\:([0-9a-z]+).*", self.alternativeAssetDict).group(1)
-		print("ALT FILE EXTENSION")
-		print(extension)
-		print("ALT FILE REFERENCE NUMBER")
-		print(refNumber)
-		new_parameters = (
-			"param1={}"
-			"&param2=1"
-			"&param3="
-			"&param4="
-			"&param5={}"
-			"&param6="
-			"&param7="
-			"&param8={}".format(
-				self.rsAssetID,
-				extension,
-				refNumber
+		
+		# get the ref ID for each alternative asset and make a new query with that ID
+		# there should be a 1:1 relationship between 
+		# the matched ref #'s and file extensions
+		alts = {}
+		refNumbers = re.findall(r"({ref\:)([0-9]+)")
+		extensions = re.findall(r"(,file_extension:)(\w{0,4})")
+		if not len(refNumbers) == len(extensions):
+			print("ALTERNATIVE FILE MISMATCH BTW EXTENSIONS AND NUM OF FILES")
+			sys.exit
+		for ref in refNumbers:
+			alts[ref] = extensions[refNumbers.index(ref)]
+
+		for ref, ext in alts.items():
+			print("ALT FILE EXTENSION")
+			print(ext)
+			print("ALT FILE REFERENCE NUMBER")
+			print(ref)
+			new_parameters = (
+				"param1={}"
+				"&param2=1"
+				"&param3="
+				"&param4="
+				"&param5={}"
+				"&param6="
+				"&param7="
+				"&param8={}".format(
+					self.rsAssetID,
+					ext,
+					ref
+					)
 				)
-			)
-		self.alternativeAssetPaths = self.rsAPI.query(
-			"get_resource_path",
-			new_parameters,
-			self._user
-			)
-		#### COMMENTED OUT FOR TESTING
-		self.localAssetPaths.append(self.alternativeAssetPaths)
+			alternativeAssetPath = self.rsAPI.query(
+				"get_resource_path",
+				new_parameters,
+				self._user
+				)
+			self.localAssetPaths.append(self.alternativeAssetPaths)
+
 		print("ALL ASSET PATHS:")
 		print(self.localAssetPaths)
 
