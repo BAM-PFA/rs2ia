@@ -26,7 +26,7 @@ copyright beyond that allowed by fair use requires the written permission \
 of the copyright owners. Works not in the public domain may not be \
 commercially exploited without permission of the copyright owner. \
 Responsibility for any use rests exclusively with the user.\n
-Berkeley Art Museum and Pacific Film Archive has made efforts in all\
+Berkeley Art Museum and Pacific Film Archive has made efforts in all \
 cases to secure permission to display copyrighted works from rights owners; \
 we are eager to hear from rights owners with any questions or concerns \
 regarding this display.\n
@@ -255,7 +255,7 @@ class Asset:
 			'title': self.title,
 			'collection': self.collection,
 			'collection': self.collection2, # this overrides the previous line
-			# Original columns 'Notes,' 'Alternative Title,' 'Credits' should be concatenated manually by operator into single column 'Notes'
+			# Original columns 'Notes,' 'Digitization QC note' should be concatenated manually by operator into single column 'Notes'
 			'description': self.assetMetadata['Notes'],
 			'subject': self.subject,
 			'date': self.date,
@@ -311,6 +311,7 @@ class Asset:
 		_creator = assetMetadata['Creator']
 
 		self.creator = ''.join([x+"; " for x in (directors,speakers,_creator) if not x in (None,"")])
+		self.creator = self.creator.replace("|"," ; ")
 
 		# TITLE
 		mainTitle = assetMetadata['Title']
