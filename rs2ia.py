@@ -343,7 +343,7 @@ class Asset:
 			self.date = _date
 
 		# SUBJECT
-		titleSubjects = assetMetadata["Subject(s): Film title(s)"]
+		titleSubjects = assetMetadata["Subject(s): Film title(s)"].replace("|","; ")
 		topics = assetMetadata["Subject(s): Topics(s)"]
 		nameTopics = assetMetadata["Subject(s): Names"]
 
