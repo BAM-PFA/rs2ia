@@ -203,10 +203,10 @@ class Asset:
 			alts[ref] = extensions[refNumbers.index(ref)]
 			
 		for ref, ext in alts.items():
-			print("ALT FILE EXTENSION")
-			print(ext)
-			print("ALT FILE REFERENCE NUMBER")
-			print(ref)
+			# print("ALT FILE EXTENSION")
+			# print(ext)
+			# print("ALT FILE REFERENCE NUMBER")
+			# print(ref)
 			new_parameters = (
 				"param1={}"
 				"&param2=1"
@@ -281,7 +281,8 @@ class Asset:
 		}
 		# get rid of empty values in the md dictionary
 		md = {k: v for k, v in md.items() if v not in (None,'')}
-		# archive.org Python Library, 'uploading': https://archive.org/services/docs/api/internetarchive/quickstart.html#uploading
+		# remove trailing "; " in any of the concatenated fields
+		md = {k: v.rsplit('; ',1)[0] for k, v in md.items() if v.endswith('; ')}
 		print("IDENTIFIER:")
 		print(self.identifier)
 		print("LOCAL ASSET PATHS:")
@@ -291,13 +292,18 @@ class Asset:
 		### COMMENTED OUT FOR TESTING
 		# from the ia package documentation:
 		# r = upload('<identifier>', files=['foo.txt', 'bar.mov'], metadata=md)
-		r = upload(self.identifier, files=self.localAssetPaths, metadata=md)
-		# consider rewriting the below? see: https://python-forum.io/Thread-Response-200-little-help
-		print(r[0].status_code)
-		if r[0].status_code == 200:
-			print("Uploaded")
-		else:
-			print("Upload failed")
+		# archive.org Python Library, 'uploading': https://archive.org/services/docs/api/internetarchive/quickstart.html#uploading
+		result = False
+		uploaded = "Didn't get to upload"
+		try:
+			r = upload(self.identifier, files=self.localAssetPaths, metadata=md)
+			if r[0].status_code == 200:
+				uploaded = "Uploaded"
+				result = True
+		except:
+			uploaded = "Upload failed"
+		print(uploaded)
+		return result
 
 	def get_core_metadata(self,assetMetadata):
 		'''
@@ -359,8 +365,12 @@ def parse_resourcespace_csv(csvPath,_user, mediaType):
 	2. Assign the correct CSV row of metadata 'values' to the current asset
 	3. Post asset with metadata to archive.org (using post_to_ia, defined above)
 	'''
-	with open(csvPath) as file:
-		records = csv.DictReader(file)
+	failed_to_redo = []
+	tempCSVpath = "{}_tempCSV{}".format(
+		os.path.splitext(csvPath)[0],
+		os.path.splitext(csvPath)[1])
+	with open(csvPath) as _file:
+		records = csv.DictReader(_file)
 		for row in records:
 			# the Asset class __init__ function defines the asset's rsAssetID, which will be stored in the same CSV row as the rest of the metadata
 			currentAsset = Asset(
@@ -378,8 +388,27 @@ def parse_resourcespace_csv(csvPath,_user, mediaType):
 				currentAsset.rsAssetID,
 				currentAsset.localAssetPaths
 				)
-			currentAsset.post_to_ia()
-			del currentAsset
+			result = currentAsset.post_to_ia()
+			if result:
+				del currentAsset
+			else:
+				failed_to_redo.append(row)
+
+	if len(failed_to_redo) > 0:
+		with open(tempCSVpath,'w') as f:
+			writer = csv.DictWriter(f,failed_to_redo[0].keys())
+			writer.writeheader()
+			for record in failed_to_redo:
+				print("FAILED TO UPLOAD TO ARCHIVE.ORG:")
+				print(record['Resource ID(s)'])
+				writer.writerow(record)
+		os.remove(csvPath)
+		csvPath = tempCSVpath.replace("_tempCSV",'')
+		result = csvPath
+	else:
+		result = False
+
+	return result
 
 def parse_drive_url(url):
 	try:
@@ -421,7 +450,8 @@ def main():
 	_user = User()
 	print("Hello, "+_user.rsUserName)
 	csvPath = define_resourcespace_csv()
-	mediaType = input("You want audio or video? Type 'a' for audio or 'v' for video: ")
+	mediaType = input("You want audio or video? "
+		"Type 'a' for audio or 'v' for video: ")
 	if mediaType == 'a':
 		mediaType = 'mp3'
 		print("YOU CHOSE AUDIO! SUPER! THANKS!")
@@ -432,7 +462,15 @@ def main():
 		print("YOU ENTERED AN INVALID MEDIA TYPE! JUST TYPE a OR v")
 		sys.exit()
 	print(mediaType)
-	parse_resourcespace_csv(csvPath,_user,mediaType)
+	result = parse_resourcespace_csv(csvPath,_user,mediaType)
+	if result != False:
+		# i.e., if a csv of records to redo gets returned
+		redo = input("Some records failed to load. If you want to redo, "
+			"type 'r' and enter, otherwise just hit enter and I will quit.")
+		if redo == 'r':
+			parse_resourcespace_csv(result,_user,mediaType)
+		else:
+			print("BYE!")
 
 if __name__ == "__main__":
 	main()
