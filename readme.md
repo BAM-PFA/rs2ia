@@ -6,7 +6,9 @@ Currently it is designed around a specific collection of video materials, but it
 
 ## Usage
 
-This is now designed to run from the server hosting the RS instance.
+This is now designed to run from the server hosting the RS instance. 
+
+You might (probably!) need to run the script using `sudo` to take into account ResourceSpace privileges under `/var/www/...`
 
 First, you should create a [collection](https://www.resourcespace.com/knowledge-base/collections-public-and-themes) in ResourceSpace that contains the batch of items you wish to publish. Download a metadata CSV to your local computer, then either copy it to the RS hosting server, or add it to Google Drive and set the sharing permissions to "Anyone with the link can edit." This creates the correct URL syntax for the script to parse.
 
@@ -29,7 +31,7 @@ If all goes well, you should see your items on archive.org in a few minutes!
 
 Install the dependencies above.
 
-Run `ia configure` to set up the credentials for connecting to archive.org. You will be prompted for the email and password for an account that will be publishing to your desired IA collection.
+Run `ia configure` to set up the credentials for connecting to archive.org. You will be prompted for the email and password for an account that will be publishing to your desired IA collection. The utility will automatically generate a config file for you. 
 
 `git clone` this repo to a convenient place on the RS server.
 
@@ -45,9 +47,12 @@ Creating and downloading the spreadsheet:
   3. On the "CSV export - metadata" page, check "Include data from all accessible fields." Click Download.
 
 
-Normalizing the spreadsheet:  
+Normalizing the spreadsheet:
+
+**IMPORTANT:** When you open the CSV (ideally in Open Office or Libre Office not Excel!), you'll want to mark any columns containing leading zeros in numbers as "text" as opposed to "number" or any default, otherwise you will lose the leading zeros when you open the file.
+
 In the downloaded CSV, combine or split up the following fields:
-  * Combine the columns 'Notes,' 'Alternative Title,' 'Credits' into a single column 'Notes'
+  * Combine the columns 'Notes,' 'Credits,' 'QC Notes' into a single column 'Notes'
   * Combine the columns 'Medium of original,' 'Dimensions of original,' 'Original video standard,' 'Generation' columns into a single column 'Medium of original'
   * Normalize the 'frame rate' column into numbers only (e.g., remove the word 'fps')
   * Split the 'video size' column into 'Video height' and 'Video width'; only use numbers (e.g., turn '640x480' into '640' and '480')
@@ -65,3 +70,5 @@ You can point the script to the CSV's local path or to a Google Drive path. If y
 Currently there are a lot of hard-coded assumptions about the media type expected (video) and the default collection on IA that we'll be loading to ("stream_only", which disables download).
 
 It's not 100% clear yet how to add things to multiple collections. Gotta ask for some advice there.
+
+Ideally the metadata fields would be configurable instead of hard-coded to BAMPFA's ResourceSpace setup. 

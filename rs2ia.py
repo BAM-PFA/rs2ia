@@ -255,7 +255,8 @@ class Asset:
 			'title': self.title,
 			'collection': self.collection,
 			'collection': self.collection2, # this overrides the previous line
-			# Original columns 'Notes,' 'Digitization QC note' should be concatenated manually by operator into single column 'Notes'
+			# Original CSV columns 'Notes,' 'Digitization QC note,' 'Event description,' etc.
+			# should be concatenated manually by operator into single column 'Notes'
 			'description': self.assetMetadata['Notes'],
 			'subject': self.subject,
 			'date': self.date,
