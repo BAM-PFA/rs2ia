@@ -257,7 +257,7 @@ class Asset:
 			'collection': self.collection2, # this overrides the previous line
 			# Original CSV columns 'Notes,' 'Digitization QC note,' etc.
 			# should be concatenated manually by operator into single column 'Notes'
-			'notes': self.assetMetadata['Notes'],
+			'notes': self.assetMetadata['Notes']+"\nDigitized through a generous 2018 grant from the Council on Library and Information Resources.",
 			# Description -> description
 			'description': self.assetMetadata['Description'],
 			'subject': self.subject,
@@ -286,7 +286,7 @@ class Asset:
 		# get rid of empty values in the md dictionary
 		md = {k: v for k, v in md.items() if v not in (None,'')}
 		# remove trailing "; " in any of the concatenated fields
-		md = {k: (v.rsplit('; ',1)[0] if v.endswith('; ') else v) for k, v in md.items()}
+		md = {k: (v.rsplit('; ',1)[0] if isinstance(v,str) and v.endswith('; ') else v) for k, v in md.items()}
 		print("IDENTIFIER:")
 		print(self.identifier)
 		print("LOCAL ASSET PATHS:")
@@ -324,14 +324,16 @@ class Asset:
 		self.creator = ''.join([x+"; " for x in (directors,speakers,_creator) if not x in (None,"")])
 		self.creator = self.creator.replace("|"," ; ")
 		self.creator = [x.strip() for x in self.creator.split(";")]
+		self.creator = [x for x in self.creator if not x in ('',None)]
 
 		# TITLE
 		mainTitle = assetMetadata['Title']
 		altTitle = assetMetadata['Alternative Title']
 		eventTitle = assetMetadata['Event title']
 		eventSeries = assetMetadata['Event series']
+		pfaFilmSeries = assetMetadata['PFA film series']
 
-		self.title = ''.join([str(x)+"; " for x in (mainTitle,altTitle,eventTitle,eventSeries) if not x in (None,"")])
+		self.title = ''.join([str(x)+"; " for x in (mainTitle,altTitle,eventTitle,eventSeries,pfaFilmSeries) if not x in (None,"")])
 
 		# DATE
 		release = assetMetadata['Release Date']
