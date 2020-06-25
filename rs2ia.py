@@ -283,7 +283,7 @@ class Asset:
 		# get rid of empty values in the md dictionary
 		md = {k: v for k, v in md.items() if v not in (None,'')}
 		# remove trailing "; " in any of the concatenated fields
-		md = {k: v.rsplit('; ',1)[0] for k, v in md.items() if v.endswith('; ')}
+		md = {k: (v.rsplit('; ',1)[0] if v.endswith('; ') else v) for k, v in md.items()}
 		print("IDENTIFIER:")
 		print(self.identifier)
 		print("LOCAL ASSET PATHS:")
