@@ -301,7 +301,8 @@ class Asset:
 			if r[0].status_code == 200:
 				uploaded = "Uploaded"
 				result = True
-		except:
+		except Exception as e:
+			print(e)
 			uploaded = "Upload failed"
 		print(uploaded)
 		return result

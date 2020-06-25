@@ -52,7 +52,7 @@ Normalizing the spreadsheet:
 **IMPORTANT:** When you open the CSV (ideally in Open Office or Libre Office not Excel!), you'll want to mark any columns containing leading zeros in numbers as "text" as opposed to "number" or any default, otherwise you will lose the leading zeros when you open the file.
 
 In the downloaded CSV, combine or split up the following fields:
-  * Combine the columns 'Notes,' 'Credits,' 'QC Notes' into a single column 'Notes'
+  * Combine the columns 'Notes,' 'Description,' 'Credits,' 'QC Notes' into a single column 'Notes' (=CONCATENATE(AD2;" ; ";V2, etc. ))
   * Combine the columns 'Medium of original,' 'Dimensions of original,' 'Original video standard,' 'Generation' columns into a single column 'Medium of original'
   * Normalize the 'frame rate' column into numbers only (e.g., remove the word 'fps')
   * Split the 'video size' column into 'Video height' and 'Video width'; only use numbers (e.g., turn '640x480' into '640' and '480')
