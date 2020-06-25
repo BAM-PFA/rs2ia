@@ -255,9 +255,11 @@ class Asset:
 			'title': self.title,
 			'collection': self.collection,
 			'collection': self.collection2, # this overrides the previous line
-			# Original CSV columns 'Notes,' 'Digitization QC note,' 'Event description,' etc.
+			# Original CSV columns 'Notes,' 'Digitization QC note,' etc.
 			# should be concatenated manually by operator into single column 'Notes'
-			'description': self.assetMetadata['Notes'],
+			'notes': self.assetMetadata['Notes'],
+			# Description -> description
+			'description': self.assetMetadata['Description'],
 			'subject': self.subject,
 			'date': self.date,
 			# contributor: The person or organization that provided the physical or digital media.
@@ -266,6 +268,7 @@ class Asset:
 			'language': self.assetMetadata['Language'],
 			'rights': rightsStatement,
 			#'licenseurl': self.license,
+			'coverage': self.assetMetadata['Location of recording'],
 
 			# Original columns 'Medium of original,' 'Dimensions of original,' 'Original video standard,' 'Generation' columns should be concatenated manually by operator into single column 'Medium of original'
 			'source': self.assetMetadata['Medium of original'],
@@ -320,6 +323,7 @@ class Asset:
 
 		self.creator = ''.join([x+"; " for x in (directors,speakers,_creator) if not x in (None,"")])
 		self.creator = self.creator.replace("|"," ; ")
+		self.creator = [x.strip() for x in self.creator.split(";")]
 
 		# TITLE
 		mainTitle = assetMetadata['Title']
