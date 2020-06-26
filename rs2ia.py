@@ -138,8 +138,7 @@ class Asset:
 		self.notes = None
 		self.mediaType = mediaType
 		self.rsAssetID = self.assetMetadata['Resource ID(s)'] # this value will come from a metadata CSV file
-		self.collection = 'pacificfilmarchive' # IN FUTURE SHOULD BE 'TVTV' as well (once archive.org collection is created)
-		self.collection2 = 'stream_only'
+		self.collection = ['stream_only','pacificfilmarchive'] # collection can be an array
 		#self.license = 'https://creativecommons.org/licenses/by-nc-nd/4.0/'
 		self._user = _user
 		self.rsAPI = ResourceSpaceAPI(_user)
@@ -254,10 +253,9 @@ class Asset:
 			'mediatype': ia_mediatype,
 			'title': self.title,
 			'collection': self.collection,
-			'collection': self.collection2, # this overrides the previous line
 			# Original CSV columns 'Notes,' 'Digitization QC note,' etc.
 			# should be concatenated manually by operator into single column 'Notes'
-			'notes': self.assetMetadata['Notes']+"\nDigitized through a generous 2018 grant from the Council on Library and Information Resources.",
+			'notes': self.assetMetadata['Notes']+"\nDigitized through a generous 2018 Recordings at Risk grant from the Council on Library and Information Resources.",
 			# Description -> description
 			'description': self.assetMetadata['Description'],
 			'subject': self.subject,
