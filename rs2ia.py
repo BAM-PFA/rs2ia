@@ -17,7 +17,7 @@ import time
 # # COUNTER IS FOR TESTING PURPOSES
 # counter=1
 
-rightsStatement = """This work may be protected by the U.S. Copyright Law \
+rightsStatement = """Copyright ©TVTV. This work is protected by U.S. Copyright Law \
 (Title 17, U.S.C.). In addition, its reproduction may be restricted by terms \
 of gift or purchase agreements, donor restrictions, privacy and publicity \
 rights, licensing and trademarks. This work is made accessible ONLY for purposes of \
@@ -26,14 +26,25 @@ copyright beyond that allowed by fair use requires the written permission \
 of the copyright owners. Works not in the public domain may not be \
 commercially exploited without permission of the copyright owner. \
 Responsibility for any use rests exclusively with the user.\n
-Berkeley Art Museum and Pacific Film Archive has made efforts in all \
-cases to secure permission to display copyrighted works from rights owners; \
-we are eager to hear from rights owners with any questions or concerns \
-regarding this display.\n
-If you are a legitimate copyright holder to this work and \
-would like to discuss removing it from public display, please send requests \
-to bampfa@berkeley.edu.
+Please send questions and comments to bampfa@berkeley.edu.
 """
+# rightsStatement = """This work may be protected by the U.S. Copyright Law \
+# (Title 17, U.S.C.). In addition, its reproduction may be restricted by terms \
+# of gift or purchase agreements, donor restrictions, privacy and publicity \
+# rights, licensing and trademarks. This work is made accessible ONLY for purposes of \
+# education and research. Transmission or reproduction of works protected by \
+# copyright beyond that allowed by fair use requires the written permission \
+# of the copyright owners. Works not in the public domain may not be \
+# commercially exploited without permission of the copyright owner. \
+# Responsibility for any use rests exclusively with the user.\n
+# Berkeley Art Museum and Pacific Film Archive has made efforts in all \
+# cases to secure permission to display copyrighted works from rights owners; \
+# we are eager to hear from rights owners with any questions or concerns \
+# regarding this display.\n
+# If you are a legitimate copyright holder to this work and \
+# would like to discuss removing it from public display, please send requests \
+# to bampfa@berkeley.edu.
+# """
 
 class User:
 	'''
@@ -255,7 +266,8 @@ class Asset:
 			'collection': self.collection,
 			# Original CSV columns 'Notes,' 'Digitization QC note,' etc.
 			# should be concatenated manually by operator into single column 'Notes'
-			'notes': self.assetMetadata['Notes']+"\nDigitized through a generous 2018 Recordings at Risk grant from the Council on Library and Information Resources.",
+			# 'notes': self.assetMetadata['Notes']+"\nDigitized through a generous 2018 Recordings at Risk grant from the Council on Library and Information Resources.",
+			'notes': self.assetMetadata['Notes']+"\nDigitized through a generous 2018 Humanities Collections and Reference Resources grant from the National Endowment for the Humanities.",
 			# Description -> description
 			'description': self.assetMetadata['Description'],
 			'subject': self.subject,
