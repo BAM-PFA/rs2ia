@@ -4,3 +4,6 @@ __py*
 fakes/*
 csvs/*
 !csvs/.gitkeep
+!temp_vids/.gitkeep
+!secrets/.gitkeep
+!secrets/sample*
