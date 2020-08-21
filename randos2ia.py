@@ -396,12 +396,14 @@ def main():
 		print("* "*50)
 		files = get_drive_file_info(folder,'id','name')
 		for file_id, details in files.items():
+			currentAssetID = re.match('(.+_)(\d{5})(_.+)',localFilepath).group(2)
+			if not currentAssetID in metaDict:
+				continue
 			localFilepath = get_file_from_drive(file_id,files[file_id]['name'])
 			print(localFilepath)
 			if not localFilepath.endswith(mediaType):
 				os.remove(localFilepath)
 				continue
-			currentAssetID = re.match('(.+_)(\d{5})(_.+)',localFilepath).group(2)
 			for k,v in metaDict.items():
 				if k == currentAssetID:
 					assetMetadata = v
@@ -415,8 +417,8 @@ def main():
 			result = currentAsset.post_to_ia()
 			if result != False:
 				os.remove(localFilepath)
-				os.remove(squarePixelFilepath)
-				iaEmbed = "https://archive.org/embed/{}".format(localFilepath)
+				os.remove(currentAsset.squarePixelFilepath)
+				iaEmbed = "https://archive.org/embed/{}".format(currentAsset.identifier)
 				metaDict[currentAssetID]['ia_url'] = iaEmbed
 			else:
 				try:
@@ -424,6 +426,8 @@ def main():
 				except:
 					pass
 				failures.append(localFilepath)
+
+			del currentAsset
 
 	if failures != []:
 		print("*** THE FOLLOWING FILES DIDN'T MAKE IT TO IA FOR SOME RESON ***\n")
