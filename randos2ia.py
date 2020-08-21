@@ -194,10 +194,16 @@ class Asset:
 		try:
 			if not self.assetMetadata['Source canonical" name"'] in [None,'']:
 				self.identifier = self.assetMetadata['Source canonical" name"']
-			else:
+			elif self.assetMetadata['Access copy filename'] not in [None,'']:
 				self.identifier = os.path.splitext(self.assetMetadata['Access copy filename'])[0]
+			elif self.assetMetadata['Access copy filename'] not in [None,'']:
+				self.identifier = self.assetMetadata['Access copy filename']
+			else:
+				base = os.path.basename(self.localFilepath)
+				baseOfBase = os.path.splitext(base)[0]
+				self.identifier = re.match('(.+_\d{5})(_.+)',self.localFilepath).group(1)
 		except:
-			self.identifier = self.assetMetadata['Access copy filename']
+			self.identifier = self.localFilepath
 
 
 ######
