@@ -396,7 +396,7 @@ def main():
 		print("* "*50)
 		files = get_drive_file_info(folder,'id','name')
 		for file_id, details in files.items():
-			currentAssetID = re.match('(.+_)(\d{5})(_.+)',name).group(2)
+			currentAssetID = re.match('(.+_)(\d{5})(_.+)',details['name']).group(2)
 			if not currentAssetID in metaDict:
 				continue
 			localFilepath = get_file_from_drive(file_id,files[file_id]['name'])
