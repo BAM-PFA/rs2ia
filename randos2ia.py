@@ -201,7 +201,7 @@ class Asset:
 			else:
 				base = os.path.basename(self.localFilepath)
 				baseOfBase = os.path.splitext(base)[0]
-				self.identifier = re.match('(.+_\d{5})(_.+)',self.localFilepath).group(1)
+				self.identifier = re.match('(.+\/)(.+_\d{5})(_.+)',self.localFilepath).group(2)
 		except:
 			self.identifier = self.localFilepath
 
