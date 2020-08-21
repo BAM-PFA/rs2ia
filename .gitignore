@@ -5,5 +5,7 @@ fakes/*
 csvs/*
 !csvs/.gitkeep
 !temp_vids/.gitkeep
+temp_vids/*
 !secrets/.gitkeep
 !secrets/sample*
+secrets/*
