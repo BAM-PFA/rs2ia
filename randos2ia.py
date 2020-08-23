@@ -319,7 +319,7 @@ def parse_metadata_csv(csvPath):
 		reader = csv.DictReader(f)
 		for row in reader:
 			_id = row['item id'] # this is the accession number
-			metaDict[_id] = {}
+			metaDict[_id] = {'ia_url':''}
 			for key in row.keys():
 				if not key == 'item id':
 					metaDict[_id][key] = row[key]
@@ -438,7 +438,7 @@ def main():
 		writer = csv.DictWriter(f,fieldnames=fieldnames)
 		writer.writeheader()
 		for k,v in metaDict.items():
-			row = {"item id":k,"ia_url":v['ia_url'],"description":v['description']}
+			row = {"item id":k,"ia_url":v['ia_url'],"description":v['Description']}
 			writer.writerow(row)
 
 
