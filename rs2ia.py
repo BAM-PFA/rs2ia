@@ -13,6 +13,7 @@ import requests
 import subprocess
 import sys
 import time
+import urllib
 
 # # COUNTER IS FOR TESTING PURPOSES
 # counter=1
@@ -56,7 +57,9 @@ class User:
 		self.define_ia_user()
 
 	def define_rs_user(self):
-		self.rsUserName = input("enter resourcespace user name:")
+		rsUserName = input("enter resourcespace user name:")
+		if not rsUserName.isalnum():
+			rsUserName = urllib.parse.quote_plus(rsUserName)
 		self.rsAPIkey = input("enter your resourcespace API key:")
 
 	def define_ia_user(self):
@@ -119,6 +122,7 @@ class ResourceSpaceAPI:
 		# 	result = queryURL
 		# except (IOError, UnicodeDecodeError) as err:
 		# 	print(err)
+		print(result.text)
 		httpStatus = result.status_code
 		if httpStatus == 200:
 			return result.text.replace("\\","").replace("\"","")
