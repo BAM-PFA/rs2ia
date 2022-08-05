@@ -60,6 +60,7 @@ class User:
 		rsUserName = input("enter resourcespace user name:")
 		if not rsUserName.isalnum():
 			rsUserName = urllib.parse.quote_plus(rsUserName)
+		self.rsUserName = rsUserName
 		self.rsAPIkey = input("enter your resourcespace API key:")
 
 	def define_ia_user(self):
