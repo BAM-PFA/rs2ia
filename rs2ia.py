@@ -256,7 +256,6 @@ class Asset:
 		md = {
 			# LET'S THINK ABOUT HOW TO MAKE THIS SET OF MD MORE AGNOSTIC/GENERALIZABLE
 			'identifier': self.identifier,
-			'mediatype': ia_mediatype,
 			'title': self.title,
 			'collection': self.collection,
 			# Original CSV columns 'Notes,' 'Digitization QC note,' etc.
