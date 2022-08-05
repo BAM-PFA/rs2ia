@@ -31,6 +31,8 @@ def transcode(local_filepath):
 	return transcoded_filepath
 
 def main(local_filepath):
+	if os.path.isfile(sys.argv[1]:
+		local_filepath
 	transcoded_filepath = transcode(local_filepath)
 
 	return transcoded_filepath

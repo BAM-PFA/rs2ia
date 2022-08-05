@@ -199,9 +199,9 @@ class Asset:
 			)
 		print("ALT ASSETS FROM RS:")
 		print(self.alternativeAssetDict)
-		
+
 		# get the ref ID for each alternative asset and make a new query with that ID
-		# there should be a 1:1 relationship between 
+		# there should be a 1:1 relationship between
 		# the matched ref #'s and file extensions
 		alts = {}
 		refNumbers = [ref[1] for ref in re.findall(r"({ref\:)([0-9]+)",self.alternativeAssetDict)]
@@ -211,7 +211,7 @@ class Asset:
 			sys.exit
 		for ref in refNumbers:
 			alts[ref] = extensions[refNumbers.index(ref)]
-			
+
 		for ref, ext in alts.items():
 			# print("ALT FILE EXTENSION")
 			# print(ext)
@@ -251,11 +251,6 @@ class Asset:
 		For more info: archive.org Python Library: https://archive.org/services/docs/api/internetarchive/quickstart.html#metadata
 			and archive.org metadata schema: https://archive.org/services/docs/api/metadata-schema/index.html
 		'''
-		if self.mediaType == 'mp4':
-			ia_mediatype = 'movies'
-		elif self.mediaType == 'mp3':
-			ia_mediatype = 'audio'
-
 		self.get_core_metadata(self.assetMetadata)
 
 		md = {
@@ -266,8 +261,8 @@ class Asset:
 			'collection': self.collection,
 			# Original CSV columns 'Notes,' 'Digitization QC note,' etc.
 			# should be concatenated manually by operator into single column 'Notes'
-			# 'notes': self.assetMetadata['Notes']+"\nDigitized through a generous 2018 Recordings at Risk grant from the Council on Library and Information Resources.",
-			'notes': self.assetMetadata['Notes']+"\nDigitized through a generous 2018 Humanities Collections and Reference Resources grant from the National Endowment for the Humanities.",
+			'notes': self.assetMetadata['Notes']+"\nDigitized through a generous 2018 Recordings at Risk grant from the Council on Library and Information Resources.",
+			# 'notes': self.assetMetadata['Notes']+"\nDigitized through a generous 2018 Humanities Collections and Reference Resources grant from the National Endowment for the Humanities.",
 			# Description -> description
 			'description': self.assetMetadata['Description'],
 			'subject': self.subject,
@@ -279,20 +274,26 @@ class Asset:
 			'rights': rightsStatement,
 			#'licenseurl': self.license,
 			'coverage': self.assetMetadata['Location of recording'],
-
-			# Original columns 'Medium of original,' 'Dimensions of original,' 'Original video standard,' 'Generation' columns should be concatenated manually by operator into single column 'Medium of original'
-			'source': self.assetMetadata['Medium of original'],
-			# 'frame rate' column should be normalized into numbers manually by operator
-			'frames_per_second': self.assetMetadata['Frame rate'],
-			# 'video size' column should be split into 'Video height' and 'Video width' numbers manually by operator
-			'source_pixel_width': self.assetMetadata['Video height'],
-			'source_pixel_height': self.assetMetadata['Video width'],
-			# 'PFA full accession number' column should be normalized to 'urn:bampfa_accession_number:XXXX' manually by operator
-			'external-identifier': self.assetMetadata['PFA full accession number'],
+			'identifier': self.identifier,
 			'condition': self.assetMetadata['Original Material Condition'],
-			'sound': self.assetMetadata['PFA item sound characteristics'],
-			'color': self.assetMetadata['Color characteristics']
+			# Original columns 'Medium of original,' 'Dimensions of original,' 'Original video standard,' 'Generation' columns should be concatenated manually by operator into single column 'Medium of original'
+			'source': self.assetMetadata['Medium of original']
 		}
+
+		if self.mediaType == 'mp4':
+			md['mediatype'] = 'movies'
+			# 'frame rate' column should be normalized into numbers manually by operator
+			md['frames_per_second'] = self.assetMetadata['Frame rate']
+			# 'video size' column should be split into 'Video height' and 'Video width' numbers manually by operator
+			md['source_pixel_width'] = self.assetMetadata['Video height']
+			md['source_pixel_height'] = self.assetMetadata['Video width'],
+			# 'PFA full accession number' column should be normalized to 'urn:bampfa_accession_number:XXXX' manually by operator
+			md['external-identifier'] = self.assetMetadata['PFA full accession number'],
+			md['sound'] = self.assetMetadata['PFA item sound characteristics'],
+			md['color'] = self.assetMetadata['Color characteristics']
+		elif self.mediaType == 'mp3':
+			md['mediatype'] = 'audio'
+
 		# get rid of empty values in the md dictionary
 		md = {k: v for k, v in md.items() if v not in (None,'')}
 		# remove trailing "; " in any of the concatenated fields
@@ -323,7 +324,7 @@ class Asset:
 	def get_core_metadata(self,assetMetadata):
 		'''
 		Try to get: Creator, Title, Date, Subject, Identifier
-		These values are all potentially in multiple columns, 
+		These values are all potentially in multiple columns,
 		so we need to sort through the possible fields.
 		'''
 		# CREATOR
